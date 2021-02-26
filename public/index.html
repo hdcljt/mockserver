@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Demo - Express Mock Server</title>
+        <base href="http://localhost:3002" />
+        <style>
+            main {
+                display: grid;
+                grid: auto-flow / repeat(auto-fit, minmax(300px, 1fr));
+                gap: 5px;
+                text-align: center;
+            }
+            main fieldset {
+                flex: 1;
+            }
+            main form {
+                display: grid;
+                grid: auto-flow / 80px 1fr;
+                gap: 5px;
+                align-items: center;
+            }
+            main form button,
+            main form fieldset,
+            main form hr,
+            main form details {
+                grid-column: span 2;
+            }
+            main form fieldset,
+            main form details section {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            main form hr {
+                width: 100%;
+            }
+            dialog {
+                min-width: 30%;
+            }
+            dialog output {
+                white-space: pre-wrap;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <fieldset>
+                <legend>登录</legend>
+                <form action="/login" method="post" autocomplete="off">
+                    <label for="username">账号</label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="username"
+                        placeholder="1~10"
+                    />
+                    <label for="password">密码</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        placeholder="任意值"
+                    />
+                    <label for="code">验证码</label>
+                    <img src="/verifyCode" alt="验证码" id="code" />
+                    <button type="submit">Submit (urlencoded)</button>
+                    <button type="button" onclick="toLogin()">
+                        Button (json)
+                    </button>
+                    <button type="reset">Reset</button>
+                </form>
+            </fieldset>
+            <fieldset>
+                <legend>登出</legend>
+                <form action="/logout">
+                    <button type="submit">Submit (get)</button>
+                </form>
+            </fieldset>
+            <fieldset>
+                <legend>增删改查</legend>
+                <form autocomplete="off">
+                    <label for="id">编号</label>
+                    <input
+                        type="text"
+                        name="userId"
+                        id="id"
+                        placeholder="1~100"
+                    />
+                    <label for="userId">账户ID</label>
+                    <input
+                        type="text"
+                        name="userId"
+                        id="userId"
+                        placeholder="1~10"
+                    />
+                    <label for="completed">完成</label>
+                    <select name="completed" id="completed">
+                        <option value="" selected>未知</option>
+                        <option value="false">未完成</option>
+                        <option value="true">已完成</option>
+                        <option value="other">其他</option>
+                    </select>
+                    <hr />
+                    <label for="title">标题</label>
+                    <input
+                        type="text"
+                        name="title"
+                        id="title"
+                        placeholder="可修改"
+                    />
+                    <fieldset>
+                        <legend>GET</legend>
+                        <button type="button" onclick="toSearch1()">
+                            查询 /get/search?id=&userId=&completed=
+                        </button>
+                        <button type="button" onclick="toSearch2()">
+                            查询 /get/query/:id
+                        </button>
+                        <button type="button" onclick="toSearch3()">
+                            查询 /get/query/:userId/:completed
+                        </button>
+                    </fieldset>
+                    <fieldset>
+                        <legend>POST</legend>
+                        <button type="button" onclick="toSearch4()">
+                            查询 /post/search
+                        </button>
+                        <button type="button" onclick="toAdd()">
+                            新增 /post/add
+                        </button>
+                        <button type="button" onclick="toUpdate()">
+                            修改 /post/update
+                        </button>
+                        <button type="button" onclick="toDelete()">
+                            删除 /post/del/:id
+                        </button>
+                    </fieldset>
+                    <button type="reset">Reset</button>
+                </form>
+            </fieldset>
+            <fieldset>
+                <legend>上传</legend>
+                <form
+                    action="/upload/single"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    autocomplete="off"
+                >
+                    <label for="name">用户名</label>
+                    <input type="text" name="username" id="name" />
+                    <label for="avatar">头像(single)</label>
+                    <input
+                        type="file"
+                        name="avatar"
+                        id="avatar"
+                        accept=".png, .jpg, .jpeg"
+                    />
+                    <label for="avatars">头像(multiple)</label>
+                    <input
+                        type="file"
+                        name="avatars"
+                        id="avatars"
+                        accept=".png, .jpg, .jpeg"
+                        multiple
+                    />
+                    <label for="attachment">附件(single)</label>
+                    <input
+                        type="file"
+                        name="attachment"
+                        id="attachment"
+                        accept=".xls, .xlsx"
+                    />
+                    <fieldset>
+                        <legend>上传单个头像</legend>
+                        <button type="submit">Submit (single)</button>
+                    </fieldset>
+                    <fieldset>
+                        <legend>上传多个头像</legend>
+                        <button type="submit" formaction="/upload/multiple">
+                            Submit (multiple)
+                        </button>
+                    </fieldset>
+                    <fieldset>
+                        <legend>上传头像和附件</legend>
+                        <button type="submit" formaction="/upload/fields">
+                            Submit (fields)
+                        </button>
+                    </fieldset>
+                    <fieldset>
+                        <legend>校验单个头像的大小和格式</legend>
+                        <button type="submit" formaction="/upload/singlecheck">
+                            Submit (single check)
+                        </button>
+                    </fieldset>
+                    <button type="reset">Reset</button>
+                </form>
+            </fieldset>
+            <fieldset>
+                <legend>下载</legend>
+                <form
+                    action="/download/backend"
+                    method="POST"
+                    autocomplete="off"
+                >
+                    <button type="submit">form POST /download/backend</button>
+                    <button type="submit" formaction="/download/attachment">
+                        form POST /download/attachment
+                    </button>
+                    <button type="submit" formaction="/download/frontend">
+                        form POST /download/frontend
+                    </button>
+                    <button type="button" onclick="download1()">
+                        fetch POST /download/backend
+                    </button>
+                    <button type="button" onclick="download2()">
+                        fetch POST /download/attachment
+                    </button>
+                    <button type="button" onclick="download3()">
+                        fetch POST /download/frontend
+                    </button>
+                    <button type="button" onclick="download4()">
+                        fetch GET /verifyCode
+                    </button>
+                    <details open>
+                        <summary>&lt;a&gt;</summary>
+                        <section>
+                            <button type="button">
+                                <a href="/download/backend">
+                                    &lt;a&gt; /download/backend
+                                </a>
+                            </button>
+                            <button type="button">
+                                <a href="/download/attachment">
+                                    &lt;a&gt; /download/attachment
+                                </a>
+                            </button>
+                            <button type="button">
+                                <a href="/download/frontend">
+                                    &lt;a&gt; /download/frontend
+                                </a>
+                            </button>
+                            <!-- <button type="button">
+                                <a href="/verifyCode">
+                                    &lt;a&gt; [download] /verifyCode
+                                </a>
+                            </button> -->
+                            <button type="button">
+                                <a
+                                    href="/download/backend"
+                                    download="test-a.jpg"
+                                >
+                                    &lt;a&gt; [download] /download/backend
+                                </a>
+                            </button>
+                            <button type="button">
+                                <a
+                                    href="/download/attachment"
+                                    download="test-b.jpg"
+                                >
+                                    &lt;a&gt; [download] /download/attachment
+                                </a>
+                            </button>
+                            <button type="button">
+                                <a
+                                    href="/download/frontend"
+                                    download="test-c.jpg"
+                                >
+                                    &lt;a&gt; [download] /download/frontend
+                                </a>
+                            </button>
+                            <!-- <button type="button">
+                                <a href="/verifyCode" download="test-d.jpg">
+                                    &lt;a&gt; [download] /verifyCode
+                                </a>
+                            </button> -->
+                        </section>
+                    </details>
+                </form>
+                <hr />
+                <progress></progress>
+            </fieldset>
+            <fieldset>
+                <legend>其他</legend>
+                <button type="button" onclick="cors1()">跨域访问</button>
+                <button type="button" onclick="cors2()">
+                    解决跨域（CORS）
+                </button>
+                <button type="button" onclick="cors3()">
+                    解决跨域（jsonp）
+                </button>
+            </fieldset>
+        </main>
+        <dialog id="dialog">
+            <form method="dialog">
+                <output id="output"></output>
+                <hr />
+                <button type="submit" value="ok">确认</button>
+            </form>
+        </dialog>
+
+        <script>
+            const wrap = fn =>
+                fn.then(res => {
+                    console.log('res', res)
+                    try {
+                        res = JSON.stringify(res, null, 2)
+                    } catch {
+                        res = String(res)
+                    }
+                    output.value = res
+                    dialog.showModal()
+                }, console.error)
+
+            const headers = {
+                'Content-Type': 'application/json'
+            }
+
+            function toLogin() {
+                wrap(
+                    fetch('/login', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            username: username.value,
+                            password: password.value
+                        })
+                    }).then(res => res.json())
+                )
+            }
+
+            function toSearch1() {
+                const query = `?id=${id.value}&userId=${userId.value}&completed=${completed.value}`
+                wrap(fetch(`/get/search${query}`).then(res => res.json()))
+            }
+
+            function toSearch2() {
+                wrap(fetch(`/get/query/${id.value}`).then(res => res.json()))
+            }
+
+            function toSearch3() {
+                wrap(
+                    fetch(
+                        `/get/query/${userId.value}/${completed.value}`
+                    ).then(res => res.json())
+                )
+            }
+
+            function toSearch4() {
+                wrap(
+                    fetch('/post/search', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            id: id.value ? +id.value : undefined,
+                            userId: userId.value ? +userId.value : undefined,
+                            completed:
+                                completed.value === 'true'
+                                    ? true
+                                    : completed.value === 'false'
+                                    ? false
+                                    : undefined
+                        })
+                    }).then(res => res.json())
+                )
+            }
+
+            function toAdd() {
+                wrap(
+                    fetch('/post/add', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            id: id.value ? +id.value : undefined,
+                            userId: userId.value ? +userId.value : undefined,
+                            completed:
+                                completed.value === 'true'
+                                    ? true
+                                    : completed.value === 'false'
+                                    ? false
+                                    : undefined,
+                            title: title.value
+                        })
+                    }).then(res => res.json())
+                )
+            }
+
+            function toUpdate() {
+                wrap(
+                    fetch('/post/update', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            id: id.value ? +id.value : undefined,
+                            userId: userId.value ? +userId.value : undefined,
+                            completed:
+                                completed.value === 'true'
+                                    ? true
+                                    : completed.value === 'false'
+                                    ? false
+                                    : undefined,
+                            title: title.value
+                        })
+                    }).then(res => res.json())
+                )
+            }
+
+            function toDelete() {
+                wrap(
+                    fetch(`/post/del/${id.value}`, {
+                        method: 'POST'
+                    }).then(res => res.json())
+                )
+            }
+
+            function genfile(blob, filename = 'test.jpg') {
+                const url = URL.createObjectURL(blob)
+                const event = new MouseEvent('click')
+                const a = document.createElement('a')
+                a.href = url
+                a.download = filename
+                a.dispatchEvent(event)
+                URL.revokeObjectURL(url)
+            }
+
+            function download1() {
+                wrap(
+                    fetch('/download/backend', {
+                        method: 'POST',
+                        headers
+                    })
+                        .then(res => res.blob())
+                        .then(genfile)
+                )
+            }
+
+            function download2() {
+                wrap(
+                    fetch('/download/attachment', {
+                        method: 'POST',
+                        headers
+                    })
+                        .then(res => res.blob())
+                        .then(genfile)
+                )
+            }
+
+            function download3() {
+                wrap(
+                    fetch('/download/frontend', {
+                        method: 'POST',
+                        headers
+                    })
+                        .then(res => res.blob())
+                        .then(genfile)
+                )
+            }
+
+            function download4() {
+                wrap(
+                    fetch('/verifyCode')
+                        .then(res => res.blob())
+                        .then(genfile)
+                )
+            }
+
+            function cors1() {
+                wrap(fetch('http://localhost:3004').then(res => res.text()))
+                // wrap(
+                //     fetch('http://localhost:3004', {
+                //         credentials: 'include'
+                //     }).then(res => res.text())
+                // )
+            }
+
+            function cors2() {
+                wrap(fetch('/cors/123').then(res => res.text()))
+            }
+
+            function cors3() {
+                const script = document.createElement('script')
+                script.src = 'http://localhost:3004?callback=jsonpCb'
+                document.body.appendChild(script)
+                window.jsonpCb = data => {
+                    console.log('jsonp data', data)
+                    document.body.removeChild(script)
+                }
+            }
+        </script>
+    </body>
+</html>

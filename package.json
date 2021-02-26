@@ -1,0 +1,17 @@
+{
+  "name": "mock-server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./index.js",
+    "serve": "node ./serve.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mockjs": "^1.1.0",
+    "multer": "^1.4.2",
+    "selfsigned": "^1.10.8"
+  }
+}
