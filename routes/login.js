@@ -15,7 +15,7 @@ router.get('/verifyCode', (req, res) => {
     if (!req.cookies[tokenName]) {
         res.cookie(tokenName, 'Test-Token', { httpOnly: true, maxAge })
     }
-    res.sendFile('verifyCode.jpg', { root: join(__dirname, '..', 'public') })
+    res.sendFile('verifyCode.jpg', { root: join(__dirname, '../public') })
 })
 
 // 登录

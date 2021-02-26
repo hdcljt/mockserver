@@ -46,7 +46,7 @@
     <body>
         <main>
             <fieldset>
-                <legend>登录</legend>
+                <legend>登录/登出</legend>
                 <form action="/login" method="post" autocomplete="off">
                     <label for="username">账号</label>
                     <input
@@ -64,17 +64,24 @@
                     />
                     <label for="code">验证码</label>
                     <img src="/verifyCode" alt="验证码" id="code" />
-                    <button type="submit">Submit (urlencoded)</button>
-                    <button type="button" onclick="toLogin()">
-                        Button (json)
-                    </button>
+                    <fieldset>
+                        <legend>进</legend>
+                        <button type="submit">Submit (urlencoded)</button>
+                        <button type="button" onclick="toLogin()">
+                            Button (json)
+                        </button>
+                    </fieldset>
+                    <fieldset>
+                        <legend>出</legend>
+                        <button
+                            type="submit"
+                            formaction="/logout"
+                            formmethod="GET"
+                        >
+                            Submit (get)
+                        </button>
+                    </fieldset>
                     <button type="reset">Reset</button>
-                </form>
-            </fieldset>
-            <fieldset>
-                <legend>登出</legend>
-                <form action="/logout">
-                    <button type="submit">Submit (get)</button>
                 </form>
             </fieldset>
             <fieldset>
@@ -101,6 +108,35 @@
                         <option value="true">已完成</option>
                         <option value="other">其他</option>
                     </select>
+                    <label for="pageNo">PageNo</label>
+                    <input
+                        type="number"
+                        name="pageNo"
+                        id="pageNo"
+                        value="1"
+                        min="1"
+                        max="100"
+                        placeholder="1~100"
+                    />
+                    <label for="pageSize">PageSize</label>
+                    <input
+                        type="number"
+                        name="pageSize"
+                        id="pageSize"
+                        value="10"
+                        min="5"
+                        max="100"
+                        step="5"
+                        placeholder="5~100"
+                        list="datalist"
+                    />
+                    <datalist id="datalist">
+                        <option>5</option>
+                        <option>10</option>
+                        <option>20</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </datalist>
                     <hr />
                     <label for="title">标题</label>
                     <input
@@ -330,18 +366,25 @@
             }
 
             function toSearch1() {
-                const query = `?id=${id.value}&userId=${userId.value}&completed=${completed.value}`
-                wrap(fetch(`/get/search${query}`).then(res => res.json()))
+                wrap(
+                    fetch(
+                        `/get/search?id=${id.value}&userId=${userId.value}&completed=${completed.value}&pageNo=${pageNo.value}&pageSize=${pageSize.value}`
+                    ).then(res => res.json())
+                )
             }
 
             function toSearch2() {
-                wrap(fetch(`/get/query/${id.value}`).then(res => res.json()))
+                wrap(
+                    fetch(
+                        `/get/query/${id.value}?pageNo=${pageNo.value}&pageSize=${pageSize.value}`
+                    ).then(res => res.json())
+                )
             }
 
             function toSearch3() {
                 wrap(
                     fetch(
-                        `/get/query/${userId.value}/${completed.value}`
+                        `/get/query/${userId.value}/${completed.value}?pageNo=${pageNo.value}&pageSize=${pageSize.value}`
                     ).then(res => res.json())
                 )
             }
@@ -359,7 +402,11 @@
                                     ? true
                                     : completed.value === 'false'
                                     ? false
-                                    : undefined
+                                    : undefined,
+                            pageNo: pageNo.value ? +pageNo.value : undefined,
+                            pageSize: pageSize.value
+                                ? +pageSize.value
+                                : undefined
                         })
                     }).then(res => res.json())
                 )
@@ -399,7 +446,11 @@
                                     : completed.value === 'false'
                                     ? false
                                     : undefined,
-                            title: title.value
+                            title: title.value,
+                            pageNo: pageNo.value ? +pageNo.value : undefined,
+                            pageSize: pageSize.value
+                                ? +pageSize.value
+                                : undefined
                         })
                     }).then(res => res.json())
                 )

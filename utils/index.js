@@ -2,8 +2,7 @@
 /**
  * @param { (...args: any[]) => Promise<void> } asyncFn
  *
- * Examples:
- *
+ * 示例:
  *    app.get('/', wrap(async (req, res, next) => {
  *        const data = await queryDb()
  *        // handle data
@@ -24,8 +23,18 @@ const createError = (message, code = '4000') => ({
     message
 })
 
+// 获得分页数据
+const getPagingData = (list = [], pageNo = 1, pageSize = 10) => {
+    const count = Math.ceil(list.length / pageSize)
+    pageNo = Math.max(Math.min(pageNo, count), 1)
+    const start = (pageNo - 1) * pageSize
+    const end = pageNo * pageSize
+    return list.slice(start, end)
+}
+
 module.exports = {
     wrap,
     createSuccess,
-    createError
+    createError,
+    getPagingData
 }

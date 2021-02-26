@@ -1,6 +1,7 @@
 // @ts-check
 const express = require('express')
 const multer = require('multer') // https://github.com/expressjs/multer/blob/master/doc/README-zh-cn.md
+const { join } = require('path')
 const { createSuccess, createError } = require('../utils')
 
 const router = express.Router()
@@ -51,7 +52,15 @@ router.post(
 )
 
 // 上传单个文件，校验大小和格式
+const storage = multer.diskStorage({
+    destination: join(__dirname, '../files'),
+    filename(req, file, cb) {
+        cb(null, file.originalname)
+    }
+})
 const check = multer({
+    // dest: join(__dirname, '../files'),
+    // storage,
     limits: { fileSize: 1048576 },
     fileFilter(req, file, cb) {
         if (!['image/jpeg', 'image/png'].includes(file.mimetype)) {

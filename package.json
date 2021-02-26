@@ -1,5 +1,6 @@
 {
   "name": "mock-server",
+  "description": "基于 Express 构建 Mock Server",
   "version": "1.0.0",
   "private": true,
   "scripts": {

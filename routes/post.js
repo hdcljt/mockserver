@@ -1,6 +1,6 @@
 // @ts-check
 const express = require('express')
-const { createSuccess, createError } = require('../utils')
+const { createSuccess, createError, getPagingData } = require('../utils')
 const { todos } = require('../utils/data')
 
 const router = express.Router()
@@ -11,7 +11,7 @@ const getNextTodoId = () =>
 
 // 查询 search ({ id?, userId?, completed? })
 router.post('/search', (req, res) => {
-    const { id, userId, completed } = req.body // app.use(express.json())
+    const { id, userId, completed, pageNo, pageSize } = req.body // app.use(express.json())
     if (id) {
         const item = todos.find(v => v.id === id)
         return res.json(createSuccess({ query: req.body, data: item }))
@@ -23,7 +23,13 @@ router.post('/search', (req, res) => {
     if (typeof completed === 'boolean') {
         items = items.filter(v => v.completed === completed)
     }
-    res.json(createSuccess({ query: req.body, data: items }))
+    res.json(
+        createSuccess({
+            query: req.body,
+            data: getPagingData(items, pageNo, pageSize),
+            total: items.length
+        })
+    )
 })
 
 // 新增 add ({ id?, userId, completed?, title? })
@@ -35,37 +41,39 @@ router.post('/add', (req, res) => {
     if (!todos.some(v => v.userId === userId)) {
         return res.json(createError(`新增失败，userId: ${userId} 不存在`))
     }
+    let item
     if (id) {
         if (todos.some(v => v.id === id)) {
             return res.json(createError(`新增失败，id: ${id} 已经存在`))
         }
-        todos.push({
+        item = {
             id,
             userId,
             completed: completed || false,
             title
-        })
+        }
     } else {
-        todos.push({
+        item = {
             id: getNextTodoId(),
             userId,
             completed: completed || false,
             title
-        })
+        }
     }
-    res.json(createSuccess({ query: req.body, data: todos }))
+    todos.push(item)
+    res.json(createSuccess({ query: req.body, data: item }))
 })
 
 // 修改 update ({ id, userId, completed?, title? })
 router.post('/update', (req, res) => {
-    const { id, userId, completed, title } = req.body // app.use(express.json())
+    const { id, userId, completed, title, pageNo, pageSize } = req.body // app.use(express.json())
     if (id) {
         const item = todos.find(v => v.id === id)
         if (!item) {
             return res.json(createError(`更新失败，id：${id} 不存在`))
         }
         item.title = title
-        return res.json(createSuccess({ query: req.body, data: todos }))
+        return res.json(createSuccess({ query: req.body, data: item }))
     }
     if (!userId) {
         return res.json(createError(`更新失败，缺少更新条件 id 或 userId`))
@@ -78,7 +86,13 @@ router.post('/update', (req, res) => {
         return res.json(createError(`更新失败，没有满足条件的数据`))
     }
     items.forEach(v => (v.title = title))
-    res.json(createSuccess({ query: req.body, data: todos }))
+    res.json(
+        createSuccess({
+            query: req.body,
+            data: getPagingData(items, pageNo, pageSize),
+            total: items.length
+        })
+    )
 })
 
 // 删除 del/:id
@@ -86,8 +100,8 @@ router.post('/del/:id(\\d+)', (req, res) => {
     const { id } = req.params
     const index = todos.findIndex(v => v.id === +id)
     if (~index) {
-        todos.splice(index, 1)
-        return res.json(createSuccess({ query: req.params, data: todos }))
+        const item = todos.splice(index, 1)
+        return res.json(createSuccess({ query: req.params, data: item }))
     }
     res.json(createError(`删除失败，id：${id} 不存在`))
 })

@@ -151,7 +151,7 @@ router.get('/verifyCode', (req, res) => {
         res.cookie(tokenName, 'Test-Token', { httpOnly: true, maxAge })
     }
     // 根据文件扩展名自动设置'Content-Type'
-    res.sendFile('verifyCode.jpg', { root: join(__dirname, '..', 'public') })
+    res.sendFile('verifyCode.jpg', { root: join(__dirname, '../public') })
 })
 ```
 
