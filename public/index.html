@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="shortcut icon" href="#" />
+        <title>Express</title>
+        <base href="https://localhost:3003/" />
+        <style>
+            form {
+                width: min-content;
+                margin: 0 auto;
+                display: grid;
+                grid: auto-flow / 120px 1fr;
+                gap: 5px;
+            }
+            form > fieldset {
+                grid-column: span 2;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            form > button {
+                grid-column: 2;
+            }
+        </style>
+    </head>
+    <body>
+        <form action="#" id="form" autocomplete="off">
+            <label for="username">用户名</label>
+            <input name="username" id="username" />
+            <label for="avatar">头像 (single)</label>
+            <input
+                type="file"
+                name="avatar"
+                id="avatar"
+                accept=".png,.jpeg,.jpg"
+            />
+            <label for="photos">照片 (multiple)</label>
+            <input
+                type="file"
+                name="photos"
+                id="photos"
+                accept=".png,.jpeg,.jpg"
+                multiple
+            />
+            <button type="reset">重 置</button>
+            <fieldset>
+                <legend>GET请求</legend>
+                <button type="button" onclick="getSearch()">
+                    /search?username=
+                </button>
+                <button type="button" onclick="getQuery()">
+                    /query/:username
+                </button>
+            </fieldset>
+            <fieldset>
+                <legend>POST请求</legend>
+                <button type="button" onclick="postSearch()">/search</button>
+                <button type="button" onclick="postUpdate()">
+                    /update/:username
+                </button>
+            </fieldset>
+            <fieldset>
+                <legend>上传文件</legend>
+                <button type="button" onclick="uploadSingle()">/single</button>
+                <button type="button" onclick="uploadMultiple()">
+                    /multiple
+                </button>
+                <button type="button" onclick="uploadFields()">/fields</button>
+                <button type="button" onclick="uploadCheck()">/check</button>
+                <button type="button" onclick="uploadStorage()">
+                    /diskStorage
+                </button>
+            </fieldset>
+            <fieldset>
+                <legend>下载文件</legend>
+                <button
+                    type="submit"
+                    formaction="/download/attachment"
+                    formmethod="POST"
+                >
+                    formaction /attachment
+                </button>
+                <!-- <button
+                    type="submit"
+                    formaction="/download/file"
+                    formmethod="POST"
+                >
+                    formaction /file
+                </button> -->
+                <button type="button" onclick="downloadAttachment()">
+                    fetch /attachment
+                </button>
+                <button type="button" onclick="downloadFile()">
+                    fetch /file
+                </button>
+                <button type="button">
+                    <a href="/download/attachment">a /attachment</a>
+                </button>
+                <!-- <button type="button">
+                    <a href="/download/file" download="download.jpg">
+                        a[download] /file
+                    </a>
+                </button> -->
+            </fieldset>
+            <fieldset>
+                <legend>代理请求</legend>
+                <button type="button" onclick="crossDomain()">
+                    跨域访问 https://www.baidu.com
+                </button>
+                <button type="button" onclick="proxy()">
+                    代理 /proxy => baidu
+                </button>
+            </fieldset>
+        </form>
+
+        <script>
+            function getSearch() {
+                fetch(`/get/search?username=${username.value}`)
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function getQuery() {
+                fetch(`/get/query/${username.value}`)
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function postSearch() {
+                fetch('/post/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username.value })
+                })
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function postUpdate() {
+                fetch(`/post/update/${username.value}`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function uploadSingle() {
+                fetch('/upload/single', {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function uploadMultiple() {
+                fetch('/upload/multiple', {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function uploadFields() {
+                fetch('/upload/fields', {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function uploadCheck() {
+                fetch('/upload/check', {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            function uploadStorage() {
+                fetch('/upload/diskStorage', {
+                    method: 'POST',
+                    body: new FormData(form)
+                })
+                    .then(res => res.json())
+                    .then(console.log, console.error)
+            }
+            const genFile = blob => {
+                const url = URL.createObjectURL(blob)
+                const evt = new MouseEvent('click')
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'download.jpg'
+                a.dispatchEvent(evt)
+                URL.revokeObjectURL(url)
+            }
+            function downloadAttachment() {
+                fetch('/download/attachment', { method: 'POST' })
+                    .then(res => res.blob())
+                    .then(genFile, console.error)
+            }
+            function downloadFile() {
+                fetch('/download/file', { method: 'POST' })
+                    .then(res => res.blob())
+                    .then(genFile, console.error)
+            }
+            function crossDomain() {
+                fetch('https://juejin.cn/')
+                    .then(res => res.text())
+                    .then(console.log, console.error)
+            }
+            function proxy() {
+                fetch('/proxy')
+                    .then(res => res.text())
+                    .then(console.log, console.error)
+            }
+        </script>
+    </body>
+</html>
